@@ -42,3 +42,4 @@ I assumed that coding/decoding a well-known image format is not the purpose of t
 
 # References
 Rafael C. Gonzalez, Richard E. Woods - Digital Image Processing, (Prentice-Hall).
+https://mars.nasa.gov/resources/curiositys-1-8-billion-pixel-panorama/

@@ -3,9 +3,12 @@
 #include <string.h>
 #include <time.h>
 
-int width = 800;
-int height = 600;
-int VERSION = 1;
+#include "version.h"
+#include "utils.h"
+
+unsigned long width = 800;
+unsigned long height = 600;
+char filename[] = "input.txt";
 
 static void usage(void)
 {
@@ -16,16 +19,7 @@ static void usage(void)
     exit(-1);
 }
 
-static int matches(const char *cmd, const char *pattern)
-{
-	int len = strlen(cmd);
-
-	if (len > strlen(pattern))
-		return -1;
-	return memcmp(pattern, cmd, len);
-}
-
-static int generate_dummy_file(int w, int h, char *out)
+static int generate_dummy_file(unsigned long w, unsigned long h, char *out)
 {
     int i;
     FILE *f = fopen(out, "w");
@@ -34,22 +28,25 @@ static int generate_dummy_file(int w, int h, char *out)
 	return -1;
     }	
 
-    fprintf(f, "%d %d", w, h);
+    fprintf(f, "%lu %lu\n", w, h);
 
     for (i = 0; i < w * h; i++) {
-	fprintf(f, "%X ", rand() % (1 << 8));
+	fprintf(f, "%X ", rand() % (1 << 16));
     }
+    fprintf(f, "\n");
 
     fclose(f);
 }
 
 int main(int argc, char **argv)
 {
-    char *output_file = NULL;
+    char *output_file = filename;
     int color = 0;
 
+/*
     if (argc <= 1)
 	usage();
+*/
 
     /* use current time as seed for random generator */
     srand(time(0));
