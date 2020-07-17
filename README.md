@@ -20,6 +20,10 @@ That means it is necessary a single pass through the pixel map. The only issue h
 
 For the structure of the result, the optimum 50 elements structure should be chosen. At the first glance, an ordered list looks very flexible, especially because we should also merge the results from different computing units (GPU/CPU cores). The merge of the local optimums can be done in just 50 steps, exactly as the merge step from the merge sort.  
 
+## Limitations
+
+To adequately control the size of the variables I used the variable types from stdint.h. Therefore, to represent the pixel value I used *uint16_t*. For width and height of the image I used *uint32_t*. This means an image resolution of 65535 x 65535. 
+
 #### Tools used (etc.)
 
 gvim
