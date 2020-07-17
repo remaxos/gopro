@@ -24,7 +24,7 @@ static void usage(void)
 static int load_image(char *input_file)
 {
     unsigned long long i;
-    unsigned long w, h;
+    uint32_t w, h;
     uint16_t *pixel_map;
     uint16_t pixel_value;
 
@@ -33,7 +33,7 @@ static int load_image(char *input_file)
 	/* ... */
     }
 
-    fscanf(f, "%lu %lu", &w, &h);
+    fscanf(f, "%u %u", &w, &h);
 
     /* 
     printf("w=%lu h=%lu\n", w, h);
@@ -71,9 +71,34 @@ static int load_image(char *input_file)
 static void *thread_work(void *arg)
 {
     struct thread_info *tinfo = arg;
-    char *uargv, *p;
+    solution *s = tinfo->solution;
+    uint16_t *pixels = tinfo->pixels;
+    unsigned long long i;
 
     printf("Starting worker with ID %d: %d %d\n", tinfo->thread_num, tinfo->start, tinfo->stop);
+
+    for (i = tinfo->start; i <= tinfo->stop; i++) {
+
+	pixel *p = (pixel *)malloc(sizeof(pixel));
+	if (!p) {
+	    printf("Cannot allocate space in thread %d!\n", tinfo->thread_num);
+	    /* TODO: what to do inside a thread */
+	}
+
+	p->pixel_value = *(pixels + i);
+	p->pixel_position = i;
+
+	/* first 50 elements should be added nevertheless */
+	if (s->count <= 50 || tinfo->func(s->pixels->pixel, p) <= 0) {
+	    s->pixels = list_add_in_order(s->pixels, p);
+	    s->count++;
+	}
+
+	if (s->count > 50) {
+	    s->pixels = list_remove_first(s->pixels);
+	    s->count--;
+	}
+    }
 }
 
 /**
@@ -84,15 +109,15 @@ static void *thread_work(void *arg)
 */
 static int find_overexposed_pixels_parallel(uint8_t *mem, compare_pixels func, int num_threads, solution *s)
 {
-     unsigned long *pw, *ph; 
-     unsigned long w, h;
+     uint32_t *pw, *ph; 
+     uint32_t w, h;
      uint64_t i;
      uint16_t *pixels;
      int err;
 
-     pw = (unsigned long*)mem;
+     pw = (uint32_t *)mem;
      w = *pw;
-     ph = (unsigned long *)(mem + sizeof(w));
+     ph = (uint32_t *)(mem + sizeof(w));
      h = *ph;
 
      s->width = w;
@@ -121,11 +146,21 @@ static int find_overexposed_pixels_parallel(uint8_t *mem, compare_pixels func, i
 	 else
 	     p[i]->stop =  (i + 1) * chunk_size;
 
+	 p[i]->pixels = pixels;
+	 //p[i]->func = func;
+
 	 s = (solution *)malloc(sizeof(solution));
 	 if (!s) {
 	     printf("Cannot allocate memory!\n");
 	     return -ENOMEM;
 	 }
+
+	 s->width = w;
+	 s->height = h;
+	 s->count = 0;
+	 s->pixels = NULL;
+
+	 p[i]->solution = s;
      }
 
      for (i = 0; i < num_threads; i++) {

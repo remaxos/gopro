@@ -51,17 +51,20 @@ typedef struct solution_struct {
     list *pixels; 
 } solution;
 
+typedef int (*compare_pixels)(pixel *p1, pixel *p2);
+
 typedef struct thread_info {
     pthread_t thread_id;
     int thread_num;
 
     uint32_t start;
     uint32_t stop;
+    uint16_t *pixels;
+    compare_pixels func;
 
-    solution *s;
+    solution *solution;
 } thread_info;
 
-typedef int compare_pixels(pixel *p1, pixel *p2);
 
 int matches(const char *cmd, const char *pattern);
 void dump_mempic(uint8_t *mem);

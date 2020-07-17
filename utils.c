@@ -210,10 +210,27 @@ void list_fprint(list *l, FILE *f) {
 solution *merge_solutions(solution *s1, solution *s2)
 {
     solution *s;
+    list *l1;
+    list *l2;
+
+    /* the two solutions should be compatible */
+    if (s1->count != s2->count || s1->width != s2->width || s1->height != s2->height)
+	return NULL;
 
     s = (solution *)malloc(sizeof(solution));
     if (!s) {
-	/* ... */
+	printf("Cannot allocate space!\n");
+	return NULL; /* TODO: return error inside pointer */
+    }
+
+    s->count = s1->count;
+    s->width = s1->width;
+    s->height = s1->height;
+    
+    l1 = s1->pixels;
+    l2 = s2->pixels;
+    while(1) {
+	
     }
 }
 
