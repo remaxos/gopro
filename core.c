@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <pthread.h>
+#include <errno.h>
 
 #include "version.h"
 #include "utils.h"
@@ -60,6 +62,95 @@ static int load_image(char *input_file)
     fclose(f);
 }
 
+/**
+* TODO
+!*
+* @param values Container whose values are summed.
+* @return sum of `values`, or 0.0 if `values` is empty.
+*/
+static void *thread_work(void *arg)
+{
+    struct thread_info *tinfo = arg;
+    char *uargv, *p;
+
+    printf("Starting worker with ID %d: %d %d\n", tinfo->thread_num, tinfo->start, tinfo->stop);
+}
+
+/**
+* TODO
+!*
+* @param values Container whose values are summed.
+* @return sum of `values`, or 0.0 if `values` is empty.
+*/
+static int find_overexposed_pixels_parallel(uint8_t *mem, compare_pixels func, int num_threads, solution *s)
+{
+     unsigned long *pw, *ph; 
+     unsigned long w, h;
+     uint64_t i;
+     uint16_t *pixels;
+     int err;
+
+     pw = (unsigned long*)mem;
+     w = *pw;
+     ph = (unsigned long *)(mem + sizeof(w));
+     h = *ph;
+
+     s->width = w;
+     s->height = h;
+
+     pixels = (uint16_t *)(mem + sizeof(w) + sizeof(h));
+
+     /* allocate */
+     thread_info *p[MAX_THREADS];
+
+     unsigned long long chunk_size = w * h / num_threads;
+
+     printf("%s() chunk_size:%llu\n", __func__, chunk_size);
+
+     for (i = 0; i < num_threads; i++) {
+	 //allocate structure for one thread
+	 p[i] = (thread_info *)malloc(sizeof(thread_info));
+	 if (!p[i]) {
+	     printf("Cannot allocate memory!\n");
+	     return -ENOMEM; 
+	 }
+
+	 p[i]->start = i * chunk_size;
+	 if (i == num_threads - 1)
+	     p[i]->stop = w * h;
+	 else
+	     p[i]->stop =  (i + 1) * chunk_size;
+
+	 s = (solution *)malloc(sizeof(solution));
+	 if (!s) {
+	     printf("Cannot allocate memory!\n");
+	     return -ENOMEM;
+	 }
+     }
+
+     for (i = 0; i < num_threads; i++) {
+	 err = pthread_create(&p[i]->thread_id, NULL, &thread_work, p[i]);
+	 if (err)
+	 {
+	     printf("Thread creation failed!\n");
+	     return err;
+	 }
+
+	 p[i]->thread_num = i;
+     }
+
+     solution *ls; /* local solution */
+     for (i = 0; i < num_threads; i++) {
+	 err = pthread_join(p[i]->thread_id, NULL);
+	 if (err)
+	 {
+	     printf("Failed to join threads!\n");
+	     return err;
+	 }
+     }
+
+     return 0;
+}
 
 /**
 * TODO
@@ -67,7 +158,7 @@ static int load_image(char *input_file)
 * @param values Container whose values are summed.
 * @return sum of `values`, or 0.0 if `values` is empty.
 */
-static int find_overexposed_pixels(uint8_t *mem, compare_pixels func, solution *s)
+static int find_overexposed_pixels_sequential(uint8_t *mem, compare_pixels func, solution *s)
 {
      unsigned long *pw, *ph; 
      unsigned long w, h;
@@ -176,7 +267,13 @@ int main(int argc, char **argv)
     //dump_mempic(mem);
     //cvLoadImageM(const char* filename, int iscolor=CV_LOAD_IMAGE_COLOR);
 
-    ret = find_overexposed_pixels(mem, compare, s);
+#if 0
+    ret = find_overexposed_pixels_sequential(mem, compare, s);
+    if (ret) {
+	/* TODO */
+    }
+#endif
+    ret = find_overexposed_pixels_parallel(mem, compare, 3, s);
     if (ret) {
 	/* TODO */
     }

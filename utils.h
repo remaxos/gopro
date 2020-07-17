@@ -8,6 +8,7 @@
 */
 
 #include <stdint.h>
+#include <pthread.h>
 
 #ifndef _UTILS_H_
 #define _UTILS_H_
@@ -49,6 +50,16 @@ typedef struct solution_struct {
     int count;    
     list *pixels; 
 } solution;
+
+typedef struct thread_info {
+    pthread_t thread_id;
+    int thread_num;
+
+    uint32_t start;
+    uint32_t stop;
+
+    solution *s;
+} thread_info;
 
 typedef int compare_pixels(pixel *p1, pixel *p2);
 

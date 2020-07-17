@@ -5,10 +5,11 @@
 
 #include "version.h"
 #include "utils.h"
+#include "core.h"
 
-unsigned long width = 10;
-unsigned long height = 20;
-char filename[] = "input.txt";
+uint32_t width = GENERATOR_WIDTH;
+uint32_t height = GENERATOR_HEIGHT;
+char filename[] = INPUTFILE;
 
 static void usage(void)
 {
@@ -19,16 +20,16 @@ static void usage(void)
     exit(-1);
 }
 
-static int generate_dummy_file(unsigned long w, unsigned long h, char *out)
+static int generate_dummy_file(uint32_t w, uint32_t h, char *out)
 {
-    int i;
+    unsigned long long i;
     FILE *f = fopen(out, "w");
 
     if (!f) {
 	return -1;
     }	
 
-    fprintf(f, "%lu %lu\n", w, h);
+    fprintf(f, "%u %u\n", w, h);
 
     for (i = 0; i < w * h; i++) {
 	fprintf(f, "%X ", rand() % (1 << 16));
