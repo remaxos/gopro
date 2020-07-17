@@ -167,19 +167,16 @@ list *list_del(list *l, list *n) {
     return l;
 }
 
-void list_print(list *l) {
+void list_print(list *l, uint32_t width, FILE *file) {
     list *idx;
     idx = l;
 
-    printf("\n[");
-    fflush(stdout);
+    fprintf(file, "\n");
     while(idx) {
-	printf("(%ld,%d) ", idx->pixel->pixel_position, idx->pixel->pixel_value); 
-	fflush(stdout);
+	fprintf(file, "x=%ld y=%ld val=%d\n", idx->pixel->pixel_position / width,
+		idx->pixel->pixel_position % width, idx->pixel->pixel_value); 
 	idx = idx->next;
     }
-    printf("]\n");
-    fflush(stdout);
 }
 
 list *list_remove_first(list *l)
@@ -220,8 +217,17 @@ solution *merge_solutions(solution *s1, solution *s2)
     }
 }
 
-void print_solution(solution *s)
+int print_solution(solution *s, char *file)
 {
-    printf("\nNumber of overexposed pixels: %d\n", s->count);
-    list_print(s->pixels);
+    FILE *f = fopen(file, "w");
+    if (!f) {
+	/* TODO */
+	return -1;
+    }
+
+    fprintf(f, "Raw image size: %dx%d\n", s->width, s->height);
+    fprintf(f, "Number of overexposed pixels: %d\n", s->count);
+    list_print(s->pixels, s->width, f);
+
+    fclose(f); 
 }

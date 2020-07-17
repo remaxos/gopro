@@ -44,6 +44,8 @@ typedef struct list {
 *  Member 'b' contains...
 */
 typedef struct solution_struct {
+    uint32_t width;
+    uint32_t height;
     int count;    
     list *pixels; 
 } solution;
@@ -55,7 +57,7 @@ void dump_mempic(uint8_t *mem);
 int compare(pixel *p1, pixel *p2);
 list *list_add_in_order(list *l, pixel *p);
 list *list_remove_first(list *l);
-void list_print(list *l);
-void print_solution(solution *s);
+void list_print(list *l, uint32_t w, FILE *f);
+int print_solution(solution *s, char *file);
 
 #endif /* _UTILS_H_ */

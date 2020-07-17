@@ -33,8 +33,10 @@ static int load_image(char *input_file)
 
     fscanf(f, "%lu %lu", &w, &h);
 
+    /* 
     printf("w=%lu h=%lu\n", w, h);
     fflush(stdout);
+    */
 
 
     mem = (uint8_t *) malloc(sizeof(uint16_t) * w * h + 2 * sizeof(unsigned long));
@@ -47,11 +49,11 @@ static int load_image(char *input_file)
 
     pixel_map = (uint16_t *)(mem + sizeof(w) + sizeof(h));
 
-    printf("w=%lu h=%lu\n", w, h);
+    //printf("w=%lu h=%lu\n", w, h);
     for (i = 0; i < w * h; i++) {
 	int n = fscanf(f, "%hx ", &pixel_value);	
 	//printf("n=%d\n", n);
-	printf("i=%lld val=%x\n", i, pixel_value);
+	//printf("i=%lld val=%x\n", i, pixel_value);
 	memcpy(pixel_map + i, &pixel_value, sizeof(pixel_value));
     }
 
@@ -77,7 +79,8 @@ static int find_overexposed_pixels(uint8_t *mem, compare_pixels func, solution *
      ph = (unsigned long *)(mem + sizeof(w));
      h = *ph;
 
-     
+     s->width = w;
+     s->height = h;
 
      pixels = (uint16_t *)(mem + sizeof(w) + sizeof(h));
 
@@ -122,6 +125,8 @@ int main(int argc, char **argv)
     if (!s) {
 	 /* TODO */
     }
+    s->width = 0;
+    s->height = 0;
     s->count = 0; 
     s->pixels = NULL;
 
@@ -168,7 +173,7 @@ int main(int argc, char **argv)
 
 
     ret = load_image(input_file);
-    dump_mempic(mem);
+    //dump_mempic(mem);
     //cvLoadImageM(const char* filename, int iscolor=CV_LOAD_IMAGE_COLOR);
 
     ret = find_overexposed_pixels(mem, compare, s);
@@ -176,7 +181,10 @@ int main(int argc, char **argv)
 	/* TODO */
     }
 
-    print_solution(s);
+    ret = print_solution(s, output_file);
+    if (ret) {
+	/* TODO */
+    }
 
     return 0;
 }
