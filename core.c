@@ -109,12 +109,14 @@ static int find_overexposed_pixels(uint8_t *mem, compare_pixels func, solution *
 
 int main(int argc, char **argv)
 {
-    char default_input_file[] = INPUTFILE;
-    char default_output_file[] = OUTPUTFILE;
-    char *input_file = default_input_file;
     solution *s;
     int color = 0;
     int ret;
+
+    char default_input_file[] = INPUTFILE;
+    char default_output_file[] = OUTPUTFILE;
+    char *input_file = default_input_file;
+    char *output_file = default_output_file;
 
     s = (solution *)malloc(sizeof(solution));
     if (!s) {
