@@ -7,3 +7,6 @@ clean:
 
 install:
 	TODO
+
+run:
+	./overexpose

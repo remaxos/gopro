@@ -6,8 +6,8 @@
 #include "version.h"
 #include "utils.h"
 
-unsigned long width = 800;
-unsigned long height = 600;
+unsigned long width = 10;
+unsigned long height = 20;
 char filename[] = "input.txt";
 
 static void usage(void)
