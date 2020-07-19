@@ -89,12 +89,12 @@ static void *thread_work(void *arg)
 	p->pixel_position = i;
 
 	/* first 50 elements should be added nevertheless */
-	if (s->count <= 50 || tinfo->func(s->pixels->pixel, p) <= 0) {
+	if (s->count <= DEPTH || tinfo->func(s->pixels->pixel, p) <= 0) {
 	    s->pixels = list_add_in_order(s->pixels, p);
 	    s->count++;
 	}
 
-	if (s->count > 50) {
+	if (s->count > DEPTH) {
 	    s->pixels = list_remove_first(s->pixels);
 	    s->count--;
 	}
@@ -114,6 +114,7 @@ static int find_overexposed_pixels_parallel(uint8_t *mem, compare_pixels func, i
      uint64_t i;
      uint16_t *pixels;
      int err;
+     solution *ls; /* local solution */
 
      pw = (uint32_t *)mem;
      w = *pw;
@@ -122,6 +123,7 @@ static int find_overexposed_pixels_parallel(uint8_t *mem, compare_pixels func, i
 
      s->width = w;
      s->height = h;
+     s->count = DEPTH;
 
      pixels = (uint16_t *)(mem + sizeof(w) + sizeof(h));
 
@@ -133,7 +135,6 @@ static int find_overexposed_pixels_parallel(uint8_t *mem, compare_pixels func, i
      printf("%s() chunk_size:%llu\n", __func__, chunk_size);
 
      for (i = 0; i < num_threads; i++) {
-	 //allocate structure for one thread
 	 p[i] = (thread_info *)malloc(sizeof(thread_info));
 	 if (!p[i]) {
 	     printf("Cannot allocate memory!\n");
@@ -147,20 +148,20 @@ static int find_overexposed_pixels_parallel(uint8_t *mem, compare_pixels func, i
 	     p[i]->stop =  (i + 1) * chunk_size;
 
 	 p[i]->pixels = pixels;
-	 //p[i]->func = func;
+	 p[i]->func = func;
 
-	 s = (solution *)malloc(sizeof(solution));
-	 if (!s) {
+	 ls = (solution *)malloc(sizeof(solution));
+	 if (!ls) {
 	     printf("Cannot allocate memory!\n");
 	     return -ENOMEM;
 	 }
 
-	 s->width = w;
-	 s->height = h;
-	 s->count = 0;
-	 s->pixels = NULL;
+	 ls->width = w;
+	 ls->height = h;
+	 ls->count = 0;
+	 ls->pixels = NULL;
 
-	 p[i]->solution = s;
+	 p[i]->solution = ls;
      }
 
      for (i = 0; i < num_threads; i++) {
@@ -174,7 +175,6 @@ static int find_overexposed_pixels_parallel(uint8_t *mem, compare_pixels func, i
 	 p[i]->thread_num = i;
      }
 
-     solution *ls; /* local solution */
      for (i = 0; i < num_threads; i++) {
 	 err = pthread_join(p[i]->thread_id, NULL);
 	 if (err)
@@ -182,6 +182,13 @@ static int find_overexposed_pixels_parallel(uint8_t *mem, compare_pixels func, i
 	     printf("Failed to join threads!\n");
 	     return err;
 	 }
+     }
+
+     for (i = 0; i < num_threads; i++) {
+	  err = merge_solutions(s, p[i]->solution);
+	  if (err) {
+	      /* TODO */
+	  }
      }
 
      return 0;
@@ -195,14 +202,14 @@ static int find_overexposed_pixels_parallel(uint8_t *mem, compare_pixels func, i
 */
 static int find_overexposed_pixels_sequential(uint8_t *mem, compare_pixels func, solution *s)
 {
-     unsigned long *pw, *ph; 
-     unsigned long w, h;
+     uint32_t *pw, *ph; 
+     uint32_t w, h;
      uint64_t i;
      uint16_t *pixels;
 
-     pw = (unsigned long*)mem;
+     pw = (uint32_t *)mem;
      w = *pw;
-     ph = (unsigned long *)(mem + sizeof(w));
+     ph = (uint32_t *)(mem + sizeof(w));
      h = *ph;
 
      s->width = w;
@@ -221,12 +228,12 @@ static int find_overexposed_pixels_sequential(uint8_t *mem, compare_pixels func,
 	 p->pixel_position = i;
 
 	 /* first 50 elements should be added nevertheless */
-	 if (s->count <= 50 || func(s->pixels->pixel, p) <= 0) {
+	 if (s->count <= DEPTH || func(s->pixels->pixel, p) <= 0) {
 	     s->pixels = list_add_in_order(s->pixels, p);
 	     s->count++;
 	 }
 
-	 if (s->count > 50) {
+	 if (s->count > DEPTH) {
 	     s->pixels = list_remove_first(s->pixels);
 	     s->count--;
 	 }
@@ -249,7 +256,8 @@ int main(int argc, char **argv)
 
     s = (solution *)malloc(sizeof(solution));
     if (!s) {
-	 /* TODO */
+	 printf("Not enough memory!\n");
+	 return -ENOMEM;
     }
     s->width = 0;
     s->height = 0;
@@ -308,6 +316,7 @@ int main(int argc, char **argv)
 	/* TODO */
     }
 #endif
+
     ret = find_overexposed_pixels_parallel(mem, compare, 3, s);
     if (ret) {
 	/* TODO */

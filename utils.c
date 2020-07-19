@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include "utils.h"
+#include "core.h"
 
 void dump_mempic(uint8_t *mem)
 {
@@ -61,7 +62,26 @@ int matches(const char *cmd, const char *pattern)
 	return memcmp(pattern, cmd, len);
 }
 
-list *list_add_to_end(list *l, pixel *p) {
+
+int list_size(list *l)
+{
+    int count;
+    list *iter;
+
+    count = 0;
+    iter = l;
+    
+
+    while (iter) {
+	count++;
+	iter = iter->next;
+    }
+
+    return count;
+}
+
+list *list_add_to_end(list *l, pixel *p)
+{
     list *n;
     list *idx;
 
@@ -206,32 +226,42 @@ void list_fprint(list *l, FILE *f) {
 }
 #endif
 
-/* merge two solutions */
-solution *merge_solutions(solution *s1, solution *s2)
+/* merge two solutions s1 & s2 into s*/
+int merge_solutions(solution *acc, solution *s)
 {
-    solution *s;
-    list *l1;
-    list *l2;
+    list *l;
+    int i;
+    int extra_size;
 
     /* the two solutions should be compatible */
-    if (s1->count != s2->count || s1->width != s2->width || s1->height != s2->height)
-	return NULL;
-
-    s = (solution *)malloc(sizeof(solution));
-    if (!s) {
-	printf("Cannot allocate space!\n");
-	return NULL; /* TODO: return error inside pointer */
+    if (acc->count != s->count || acc->width != s->width || acc->height != s->height) {
+	/* TODO: find a proper return code */
+	return -1;
     }
 
-    s->count = s1->count;
-    s->width = s1->width;
-    s->height = s1->height;
-    
-    l1 = s1->pixels;
-    l2 = s2->pixels;
-    while(1) {
-	
+    l = s->pixels;
+    while (l) {
+	acc->pixels = list_add_in_order(acc->pixels, l->pixel);
+	l = l->next;
     }
+
+    if (list_size(acc->pixels) < acc->count) {
+	/* TODO: find a proper return code */
+	return -1;
+    }
+
+    extra_size = list_size(acc->pixels) - acc->count;
+    for (i = 0; i < extra_size; i++) {
+	printf("i = %d\n", i);
+	if (acc->pixels == NULL) {
+	    /* TODO: find a proper return code */
+	    return -1;
+	}
+
+	acc->pixels = acc->pixels->next;
+    }
+
+    return 0;
 }
 
 int print_solution(solution *s, char *file)

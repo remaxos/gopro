@@ -10,7 +10,7 @@ clean:
 install:
 	TODO
 
-run: clean
-	touch /tmp/gopro
-	time -o /tmp/gopro ./generate_raw_image
+generate:
+	./generate_raw_image
+run:
 	./gopro_find_white

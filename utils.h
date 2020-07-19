@@ -73,5 +73,6 @@ list *list_add_in_order(list *l, pixel *p);
 list *list_remove_first(list *l);
 void list_print(list *l, uint32_t w, FILE *f);
 int print_solution(solution *s, char *file);
+int merge_solutions(solution *acc, solution *s);
 
 #endif /* _UTILS_H_ */

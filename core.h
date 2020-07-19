@@ -19,4 +19,6 @@
 #define MAX_THREADS 100
 #define NTHREADS 1
 
+#define DEPTH 50
+
 #endif /* _CORE_H_ */
