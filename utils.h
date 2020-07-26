@@ -1,5 +1,5 @@
 /** \file utils.h
-* Description of the file
+* Basic structures to be used
 *
 * \author Marian-Cristian Rotariu <marian.c.rotariu@gmail.com>
 * \version 1.0
@@ -7,30 +7,20 @@
 * \bug TODO
 */
 
-#include <stdint.h>
-#include <pthread.h>
-
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
-/** @struct pixel 
-*  @brief This structure blah blah blah...
-*  @var foreignstruct::a 
-*  Member 'a' contains...
-*  @var foreignstruct::b 
-*  Member 'b' contains...
-*/
-typedef struct pixel {
-    uint16_t pixel_value;
-    uint64_t pixel_position;
-} pixel;
+#include <stdint.h>
+#include <pthread.h>
+
+#include "core.h"
 
 /** @struct list 
-*  @brief This structure blah blah blah...
-*  @var foreignstruct::a 
-*  Member 'a' contains...
-*  @var foreignstruct::b 
-*  Member 'b' contains...
+*  @brief Basic structure for the solution
+*  @var pixel
+*  Member 'pixel' is the information part of the list
+*  @var next
+*  Member 'next' is the pointer to the next element of the list
 */
 typedef struct list {
     pixel *pixel;
@@ -38,17 +28,22 @@ typedef struct list {
 } list;
 
 /** @struct solution_struct 
-*  @brief This structure blah blah blah...
-*  @var foreignstruct::a 
-*  Member 'a' contains...
-*  @var foreignstruct::b 
-*  Member 'b' contains...
+*  @brief This structure is the representation of the solution for this application
+*  @var width
+*  Member 'width' is the width of the picture
+*  @var height
+*  Member 'height' is the height of the picture
+*  @var count
+*  Member 'count' represents the size of the list
+*  @var pixels 
+*  Member 'pixels' represents the list with the pixels from the solution of the application 
 */
 typedef struct solution_struct {
     uint32_t width;
     uint32_t height;
+
     int count;    
-    list *pixels; 
+    list *pixels;
 } solution;
 
 typedef int (*compare_pixels)(pixel *p1, pixel *p2);
@@ -64,7 +59,6 @@ typedef struct thread_info {
 
     solution *solution;
 } thread_info;
-
 
 int matches(const char *cmd, const char *pattern);
 void dump_mempic(uint8_t *mem);

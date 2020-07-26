@@ -1,3 +1,12 @@
+/** \file core.c
+* This file contains the core part of the application 
+*
+* \author Marian-Cristian Rotariu <marian.c.rotariu@gmail.com>
+* \version 1.0
+* \date 2020
+* \bug TODO
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,20 +39,16 @@ static int load_image(char *input_file)
 
     FILE *f = fopen(input_file, "r");
     if (!f) {
-	/* ... */
+	printf("Cannot open input file!\n");
+	return -ENOENT;
     }
 
     fscanf(f, "%u %u", &w, &h);
 
-    /* 
-    printf("w=%lu h=%lu\n", w, h);
-    fflush(stdout);
-    */
-
-
     mem = (uint8_t *) malloc(sizeof(uint16_t) * w * h + 2 * sizeof(unsigned long));
     if (!mem) {
-	/* ... */
+	printf("Cannot allocate memory!\n");
+	return -ENOMEM;
     }
 
     memcpy(mem, &w, sizeof(w));
@@ -51,11 +56,8 @@ static int load_image(char *input_file)
 
     pixel_map = (uint16_t *)(mem + sizeof(w) + sizeof(h));
 
-    //printf("w=%lu h=%lu\n", w, h);
     for (i = 0; i < w * h; i++) {
 	int n = fscanf(f, "%hx ", &pixel_value);	
-	//printf("n=%d\n", n);
-	//printf("i=%lld val=%x\n", i, pixel_value);
 	memcpy(pixel_map + i, &pixel_value, sizeof(pixel_value));
     }
 
@@ -187,7 +189,8 @@ static int find_overexposed_pixels_parallel(uint8_t *mem, compare_pixels func, i
      for (i = 0; i < num_threads; i++) {
 	  err = merge_solutions(s, p[i]->solution);
 	  if (err) {
-	      /* TODO */
+	      printf("Cannot merge solutions\n");
+	      return err;
 	  }
      }
 
@@ -307,24 +310,30 @@ int main(int argc, char **argv)
 
 
     ret = load_image(input_file);
-    //dump_mempic(mem);
-    //cvLoadImageM(const char* filename, int iscolor=CV_LOAD_IMAGE_COLOR);
+    if (ret) {
+	return ret;
+    }
+
+    /* dump_mempic(mem); */
+
+    /* TODO: use OpenCV to load standard images */
+    /* cvLoadImageM(const char* filename, int iscolor=CV_LOAD_IMAGE_COLOR); */
 
 #if 0
     ret = find_overexposed_pixels_sequential(mem, compare, s);
     if (ret) {
-	/* TODO */
+	return ret;
     }
 #endif
 
     ret = find_overexposed_pixels_parallel(mem, compare, 3, s);
     if (ret) {
-	/* TODO */
+	return ret;
     }
 
     ret = print_solution(s, output_file);
     if (ret) {
-	/* TODO */
+	return ret;
     }
 
     return 0;

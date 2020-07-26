@@ -1,3 +1,14 @@
+/** \file generator.c
+* This file contains the code for the raw image generator. This is a standalone application
+* and can be used to futher develop an application that write into a dedicated memory zone
+* from the GoPro device
+*
+* \author Marian-Cristian Rotariu <marian.c.rotariu@gmail.com>
+* \version 1.0
+* \date 2020
+* \bug TODO
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -58,7 +69,7 @@ int main(int argc, char **argv)
 	if (opt[0] != '-')
 	    break;
 
-	printf("%s\n", opt);
+	//printf("%s\n", opt);
 
 	if (matches(opt, "-version") == 0) {
 	    printf("generate_dummy utility, version %d\n", VERSION);
