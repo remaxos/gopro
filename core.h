@@ -15,8 +15,8 @@
 #define INPUTFILE 	"input.txt"
 #define OUTPUTFILE	"output.txt"
 
-#define GENERATOR_WIDTH  2000
-#define GENERATOR_HEIGHT 2000
+#define GENERATOR_WIDTH  20000
+#define GENERATOR_HEIGHT 20000
 
 #define MAX_THREADS 100
 #define NTHREADS 1

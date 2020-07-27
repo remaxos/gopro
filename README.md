@@ -8,7 +8,6 @@ The complete problem definition is:
 > Please also provide any assumptions made in solving the problem and add them as comments inside the code.
 > Given a grayscale image from an image sensor in memory with each 16-bit word equating to a pixel value, write a program to find the 50 pixels (including their location) with the highest pixel values.
 
-
 ## 16-bit Greyscale
 
 The 16-bit greyscale offers 65536 levels of grey. TIFF and PNG formats support 16-bit grayscale natively.
@@ -19,6 +18,8 @@ The first approach to this problem looks pretty straight forward. The complexity
 That means it is necessary a single pass through the pixel map. The only issue here is how well this O(n) problem can be optimized. There are two basic improvements here: the structure for the results and, the most important by far, how we can use the SMP architecture of the computer and, ultimately, the GPU, if it is available.
 
 For the structure of the result, the optimum 50 elements structure should be chosen. At the first glance, an ordered list looks very flexible, especially because we should also merge the results from different computing units (GPU/CPU cores). The merge of the local optimums can be done in just 50 steps, exactly as the merge step from the merge sort.  
+
+## Results Format
 
 ## Limitations
 
@@ -42,7 +43,10 @@ In this chosen dummy format we have chosen the most basic format to describe a f
 
 I assumed that coding/decoding a well-known image format is not the purpose of this exercise. In order to have a smooth transition to a full-feature interface, I used OpenCV to load and store test images to the memory in order to find the white pixels. 
 
-
+# TODO
+1. generate an image in parallel
+2. free-up memory used
+3. add debug systems with debug file dump and debug variables
 
 # References
 Rafael C. Gonzalez, Richard E. Woods - Digital Image Processing, (Prentice-Hall).

@@ -8,7 +8,7 @@ clean:
 	rm -f output.txt
 
 install:
-	TODO
+	/* TODO: copy the binaries to /usr/bin */
 
 generate:
 	./generate_raw_image

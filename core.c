@@ -25,8 +25,9 @@ uint8_t *mem;
 static void usage(void)
 {
     fprintf(stderr,
-	    "Usage: generate_dummy [ OPTIONS ] \n"
-	    "       OPTIONS := { -h[elp] | -v[ersion] | -i[input] [filename] \n");
+	    "Usage: gopro_find_white [ OPTIONS ] \n"
+	    "       OPTIONS := { -h[elp] | -v[ersion] | -i[input] [filename] |\n"
+	    "                    -j <number of threads> }\n");
     exit(-1);
 }
 
@@ -65,7 +66,7 @@ static int load_image(char *input_file)
 }
 
 /**
-* TODO
+* This is the work done by a thread; the work is done on a raw image slice
 !*
 * @param values Container whose values are summed.
 * @return sum of `values`, or 0.0 if `values` is empty.
@@ -84,7 +85,7 @@ static void *thread_work(void *arg)
 	pixel *p = (pixel *)malloc(sizeof(pixel));
 	if (!p) {
 	    printf("Cannot allocate space in thread %d!\n", tinfo->thread_num);
-	    /* TODO: what to do inside a thread */
+	    return NULL;
 	}
 
 	p->pixel_value = *(pixels + i);
@@ -101,6 +102,8 @@ static void *thread_work(void *arg)
 	    s->count--;
 	}
     }
+
+    return NULL;
 }
 
 /**
@@ -134,7 +137,7 @@ static int find_overexposed_pixels_parallel(uint8_t *mem, compare_pixels func, i
 
      unsigned long long chunk_size = w * h / num_threads;
 
-     printf("%s() chunk_size:%llu\n", __func__, chunk_size);
+     //printf("%s() chunk_size:%llu\n", __func__, chunk_size);
 
      for (i = 0; i < num_threads; i++) {
 	 p[i] = (thread_info *)malloc(sizeof(thread_info));
@@ -189,7 +192,7 @@ static int find_overexposed_pixels_parallel(uint8_t *mem, compare_pixels func, i
      for (i = 0; i < num_threads; i++) {
 	  err = merge_solutions(s, p[i]->solution);
 	  if (err) {
-	      printf("Cannot merge solutions\n");
+	      printf("Cannot merge solutions!\n");
 	      return err;
 	  }
      }
@@ -251,6 +254,7 @@ int main(int argc, char **argv)
     solution *s;
     int color = 0;
     int ret;
+    int nthreads = 0;
 
     char default_input_file[] = INPUTFILE;
     char default_output_file[] = OUTPUTFILE;
@@ -278,7 +282,7 @@ int main(int argc, char **argv)
 	if (opt[0] != '-')
 	    break;
 
-	printf("%s\n", opt);
+	//printf("%s\n", opt);
 
 	if (matches(opt, "-version") == 0) {
 	    printf("find_exposure utility, version %d\n", VERSION);
@@ -289,6 +293,12 @@ int main(int argc, char **argv)
 	    if (argc <= 1)
 		usage();
 	    input_file = argv[1];
+        } else if (matches(opt, "-j") == 0) {
+	    argc--;
+	    argv++;
+	    if (argc <= 1)
+		usage();
+	    nthreads = atoi(argv[1]);
 	} else if (matches(opt, "-output") == 0) {
 	    argc--;
 	    argv++;
@@ -319,22 +329,27 @@ int main(int argc, char **argv)
     /* TODO: use OpenCV to load standard images */
     /* cvLoadImageM(const char* filename, int iscolor=CV_LOAD_IMAGE_COLOR); */
 
-#if 0
-    ret = find_overexposed_pixels_sequential(mem, compare, s);
-    if (ret) {
-	return ret;
-    }
-#endif
-
-    ret = find_overexposed_pixels_parallel(mem, compare, 3, s);
-    if (ret) {
-	return ret;
+    /* if the user does not care about the number of threads attempt a sequential solution */
+    if (nthreads == 0) {
+	printf("Running in sequential mode\n");
+	ret = find_overexposed_pixels_sequential(mem, compare, s);
+	if (ret) {
+	    return ret;
+	}
+    } else {
+	printf("Running in parallel mode (%d threads)\n", nthreads);
+	ret = find_overexposed_pixels_parallel(mem, compare, nthreads, s);
+	if (ret) {
+	    return ret;
+	}
     }
 
     ret = print_solution(s, output_file);
     if (ret) {
 	return ret;
     }
+
+    /* TODO: free the space inside the memory */
 
     return 0;
 }

@@ -11,6 +11,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #include "utils.h"
 #include "core.h"
@@ -61,7 +62,6 @@ int matches(const char *cmd, const char *pattern)
 		return -1;
 	return memcmp(pattern, cmd, len);
 }
-
 
 int list_size(list *l)
 {
@@ -203,7 +203,7 @@ list *list_remove_first(list *l)
 {
     list *new_list = l->next;
 
-    /* generic free approach */ 
+    /* TODO: generic free approach */ 
     free(l->pixel);
     free(l);
 
@@ -250,12 +250,12 @@ int merge_solutions(solution *acc, solution *s)
 	return -1;
     }
 
+    /* the extra 'smaller' elements should be removed */
     extra_size = list_size(acc->pixels) - acc->count;
     for (i = 0; i < extra_size; i++) {
-	printf("i = %d\n", i);
 	if (acc->pixels == NULL) {
-	    /* TODO: find a proper return code */
-	    return -1;
+	    printf("Cannot remove extra elements from list!\n");
+	    return -EFAULT;
 	}
 
 	acc->pixels = acc->pixels->next;

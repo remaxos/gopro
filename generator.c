@@ -25,7 +25,7 @@ char filename[] = INPUTFILE;
 static void usage(void)
 {
     fprintf(stderr,
-	    "Usage: generate_dummy [ OPTIONS ] \n"
+	    "Usage: gopro_generate_raw [ OPTIONS ] \n"
 	    "       OPTIONS := { -h[elp] | -v[ersion] | -o[utput] [filename] |\n"
 	    "                    -w[idth] [size] | -h[height] [size] }\n");
     exit(-1);
